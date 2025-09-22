@@ -1,0 +1,60 @@
+INFO 2025-09-21 21:00:15,352 autoreload Watching for file changes with StatReloader
+DEBUG 2025-09-21 21:00:48,009 utils Fetching from TMDb: https://api.themoviedb.org/3/trending/movie/week with params: {'api_key': '8affeb7b5afcb034d36b16ec279875f5'}
+DEBUG 2025-09-21 21:00:48,649 utils Successfully fetched data from TMDb: trending/movie/week
+DEBUG 2025-09-21 21:00:48,663 utils Found existing movie: Weapons (ID: 1078605)
+DEBUG 2025-09-21 21:00:48,669 utils Found existing movie: Demon Slayer: Kimetsu no Yaiba Infinity Castle (ID: 1311031)
+DEBUG 2025-09-21 21:00:48,676 utils Found existing movie: Superman (ID: 1061474)
+DEBUG 2025-09-21 21:00:48,684 utils Found existing movie: The Dark Knight (ID: 155)
+DEBUG 2025-09-21 21:00:48,690 utils Found existing movie: xXx (ID: 7451)
+DEBUG 2025-09-21 21:00:48,696 utils Found existing movie: The Naked Gun (ID: 1035259)
+DEBUG 2025-09-21 21:00:48,703 utils Found existing movie: The Conjuring: Last Rites (ID: 1038392)
+DEBUG 2025-09-21 21:00:48,709 utils Found existing movie: Nobody 2 (ID: 1007734)
+DEBUG 2025-09-21 21:00:48,715 utils Found existing movie: The Suicide Squad (ID: 436969)
+DEBUG 2025-09-21 21:00:48,721 utils Found existing movie: Relay (ID: 1088166)
+DEBUG 2025-09-21 21:00:48,729 utils Found existing movie: Interstellar (ID: 157336)
+DEBUG 2025-09-21 21:00:48,734 utils Found existing movie: Swiped (ID: 1265344)
+DEBUG 2025-09-21 21:00:48,740 utils Found existing movie: F1 (ID: 911430)
+DEBUG 2025-09-21 21:00:48,745 utils Found existing movie: The Wolf of Wall Street (ID: 106646)
+DEBUG 2025-09-21 21:00:48,752 utils Found existing movie: HIM (ID: 986097)
+DEBUG 2025-09-21 21:00:48,759 utils Found existing movie: One Battle After Another (ID: 1054867)
+DEBUG 2025-09-21 21:00:48,764 utils Found existing movie: Elio (ID: 1022787)
+DEBUG 2025-09-21 21:00:48,770 utils Found existing movie: The Long Walk (ID: 604079)
+DEBUG 2025-09-21 21:00:48,776 utils Found existing movie: Mission: Impossible - The Final Reckoning (ID: 575265)
+DEBUG 2025-09-21 21:00:48,781 utils Found existing movie: 28 Years Later (ID: 1100988)
+INFO 2025-09-21 21:00:48,784 views Cached 20 trending movies
+INFO 2025-09-21 21:00:48,787 basehttp "GET /api/movies/trending/ HTTP/1.1" 200 11584
+DEBUG 2025-09-21 21:00:48,792 utils Fetching from TMDb: https://api.themoviedb.org/3/search/movie with params: {'query': 'avengers', 'api_key': '8affeb7b5afcb034d36b16ec279875f5'}
+DEBUG 2025-09-21 21:00:49,270 utils Successfully fetched data from TMDb: search/movie
+DEBUG 2025-09-21 21:00:49,286 utils Found existing movie: The Avengers (ID: 24428)
+DEBUG 2025-09-21 21:00:49,292 utils Found existing movie: Avengers: Infinity War (ID: 299536)
+DEBUG 2025-09-21 21:00:49,297 utils Found existing movie: Masked Avengers (ID: 63441)
+DEBUG 2025-09-21 21:00:49,304 utils Found existing movie: Crippled Avengers (ID: 40081)
+DEBUG 2025-09-21 21:00:49,310 utils Found existing movie: Avengers: Endgame (ID: 299534)
+DEBUG 2025-09-21 21:00:49,316 utils Found existing movie: Avengers: Age of Ultron (ID: 99861)
+DEBUG 2025-09-21 21:00:49,323 utils Found existing movie: Bikini Avengers (ID: 347158)
+DEBUG 2025-09-21 21:00:49,328 utils Found existing movie: Avengers Confidential: Black Widow & Punisher (ID: 257346)
+DEBUG 2025-09-21 21:00:49,333 utils Found existing movie: 3 Avengers (ID: 296491)
+DEBUG 2025-09-21 21:00:49,339 utils Found existing movie: The Shaolin Avengers (ID: 109088)
+DEBUG 2025-09-21 21:00:49,344 utils Found existing movie: Avengers: Doomsday (ID: 1003596)
+DEBUG 2025-09-21 21:00:49,350 utils Found existing movie: Avengers from Hell (ID: 157421)
+DEBUG 2025-09-21 21:00:49,355 utils Found existing movie: The Avengers: A Visual Journey (ID: 448368)
+INFO 2025-09-21 21:00:49,387 utils Created new movie: Avengers: Race Against Time (ID: 1549589)
+DEBUG 2025-09-21 21:00:49,392 utils Found existing movie: Kali: Avenging Angel (ID: 1108354)
+DEBUG 2025-09-21 21:00:49,399 utils Found existing movie: LEGO Marvel Avengers: Time Twisted (ID: 940543)
+DEBUG 2025-09-21 21:00:49,404 utils Found existing movie: Hassanpoulia: The Avengers of Cyprus (ID: 385411)
+DEBUG 2025-09-21 21:00:49,409 utils Found existing movie: The New Adventures of the Elusive Avengers (ID: 65591)
+DEBUG 2025-09-21 21:00:49,415 utils Found existing movie: Avengers: Secret Wars (ID: 1003598)
+DEBUG 2025-09-21 21:00:49,420 utils Found existing movie: A Brighter Summer Day for the Lady Avengers (ID: 1353766)
+INFO 2025-09-21 21:00:49,422 views Cached 20 search results for 'avengers'
+INFO 2025-09-21 21:00:49,425 basehttp "GET /api/movies/search/?q=avengers HTTP/1.1" 200 10972
+INFO 2025-09-21 21:00:49,617 basehttp "GET /api/docs/ HTTP/1.1" 200 1648
+INFO 2025-09-21 21:00:50,527 basehttp "POST /api/auth/register/ HTTP/1.1" 201 39
+INFO 2025-09-21 21:00:51,373 basehttp "POST /api/auth/login/ HTTP/1.1" 200 42
+INFO 2025-09-21 21:07:26,989 views Serving trending movies from cache
+INFO 2025-09-21 21:07:26,990 basehttp "GET /api/movies/trending/ HTTP/1.1" 200 11584
+INFO 2025-09-21 21:07:26,997 views Serving search results for 'avengers' from cache
+INFO 2025-09-21 21:07:27,000 basehttp "GET /api/movies/search/?q=avengers HTTP/1.1" 200 10972
+INFO 2025-09-21 21:07:27,011 basehttp "GET /api/docs/ HTTP/1.1" 200 1648
+INFO 2025-09-21 21:07:27,936 basehttp "POST /api/auth/register/ HTTP/1.1" 201 39
+INFO 2025-09-21 21:07:28,872 basehttp "POST /api/auth/login/ HTTP/1.1" 200 42
+INFO 2025-09-21 21:38:38,903 autoreload /mnt/c/Users/cv/OneDrive/Desktop/my projects/movie_recommendation/movie_app/settings.py changed, reloading.
