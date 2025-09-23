@@ -16,9 +16,24 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+
+# Root view function
+def root_view(request):
+    return JsonResponse({
+        "message": "Movie Recommendation API is running! 🎬",
+        "version": "v1.0",
+        "endpoints": {
+            "admin_panel": "/admin/",
+            "api_documentation": "/api/docs/",
+            "authentication": "/api/auth/",
+            "movies": "/api/movies/"
+        },
+        "status": "active"
+    })
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -31,8 +46,9 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path('', root_view, name='root'),  # ← ADD THIS LINE for the root URL
     path('admin/', admin.site.urls),
     path('api/auth/', include('users.urls')),
-    path('api/movies/', include('movies.urls')),  # Only one line for movies
+    path('api/movies/', include('movies.urls')),
     path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]
