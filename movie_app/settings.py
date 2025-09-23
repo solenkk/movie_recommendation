@@ -27,9 +27,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-for-development-only')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'  # Changed default to False for production
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0').split(',')
+# Railway-specific allowed hosts
+RAILWAY_STATIC_URL = os.getenv('RAILWAY_STATIC_URL', '')
+ALLOWED_HOSTS = [
+    'movierecommendation-production-1df5.up.railway.app',
+    '.railway.app',
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0'
+]
+
+# Add Railway URL if present
+if RAILWAY_STATIC_URL:
+    ALLOWED_HOSTS.append(RAILWAY_STATIC_URL)
 
 # Application definition
 INSTALLED_APPS = [
@@ -106,24 +118,21 @@ REST_FRAMEWORK = {
 }
 
 # Database configuration
-# Use PostgreSQL in production, SQLite in development
-if DEBUG:
+# Use Railway PostgreSQL if DATABASE_URL is available, otherwise SQLite
+if os.getenv('DATABASE_URL'):
+    import dj_database_url
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'),
+            conn_max_age=600,
+            ssl_require=True
+        )
     }
 else:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', 'movie_db'),
-            'USER': os.getenv('DB_USER', 'movie_user'),
-            'PASSWORD': os.getenv('DB_PASSWORD', ''),
-            'HOST': os.getenv('DB_HOST', 'localhost'),
-            'PORT': os.getenv('DB_PORT', '5432'),
-            'CONN_MAX_AGE': 600,  # Database connection persistence
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 
@@ -131,41 +140,37 @@ else:
 TMDB_API_KEY = os.getenv('TMDB_API_KEY', '8affeb7b5afcb034d36b16ec279875f5')
 TMDB_BASE_URL = os.getenv('TMDB_BASE_URL', 'https://api.themoviedb.org/3')
 
-# Cache configuration - Use Redis in production, local memory in development
-if DEBUG:
+# Cache configuration - Use Redis if available, otherwise local memory
+if os.getenv('REDIS_URL'):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': os.getenv('REDIS_URL'),
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            }
+        }
+    }
+else:
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
             'LOCATION': 'unique-snowflake',
         }
     }
-else:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django_redis.cache.RedisCache',
-            'LOCATION': os.getenv('REDIS_URL', 'redis://127.0.0.1:6379/1'),
-            'OPTIONS': {
-                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-                'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
-            }
-        }
-    }
 
-# Session configuration - use cache in production
-if not DEBUG:
-    SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
-    SESSION_CACHE_ALIAS = 'default'
+# Session configuration
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = DEBUG  # Only allow all origins in development
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all for now, can restrict later
 CORS_ALLOW_CREDENTIALS = True
 
-if not DEBUG:
-    CORS_ALLOWED_ORIGINS = [
-        "http://localhost:3000",  # React development server
-        "http://127.0.0.1:3000",
-        "https://yourdomain.com",  # Your production domain
-    ]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://movierecommendation-production-1df5.up.railway.app",
+]
 
 # Security settings for production
 if not DEBUG:
@@ -184,7 +189,6 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
-    SECURE_REFERRER_POLICY = 'same-origin'
 
 # Logging configuration
 LOG_LEVEL = 'DEBUG' if DEBUG else 'INFO'
@@ -207,37 +211,25 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose' if DEBUG else 'simple',
         },
-        'file': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'django.log',
-            'maxBytes': 1024 * 1024 * 5,  # 5 MB
-            'backupCount': 5,
-            'formatter': 'verbose',
-        },
     },
     'root': {
-        'handlers': ['console', 'file'],
+        'handlers': ['console'],
         'level': LOG_LEVEL,
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': LOG_LEVEL,
             'propagate': False,
         },
         'movies': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False,
         },
         'users': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'django.db.backends': {
             'handlers': ['console'],
-            'level': 'INFO' if DEBUG else 'WARNING',
+            'level': 'DEBUG',
             'propagate': False,
         },
     },
@@ -271,8 +263,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Remove the non-existent static directory from STATICFILES_DIRS
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',
+    # Only include if the directory exists
+    # BASE_DIR / 'static',  # Commented out since it doesn't exist
 ]
 
 # WhiteNoise configuration for static files
@@ -293,8 +288,6 @@ SWAGGER_SETTINGS = {
         }
     },
     'USE_SESSION_AUTH': False,
-    'DEFAULT_INFO': 'movie_app.urls.api_info',
-    'DEFAULT_API_URL': None,
 }
 
 # Custom settings
