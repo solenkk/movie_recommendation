@@ -106,6 +106,10 @@ REST_FRAMEWORK = {
     ),
 }
 
+
+import socket
+socket.getaddrinfo('api.themoviedb.org', 443)  # Test DNS resolution
+
 # Database configuration - FIXED FOR RAILWAY
 # Use DATABASE_URL from Railway environment, fallback to SQLite for development
 DATABASES = {
