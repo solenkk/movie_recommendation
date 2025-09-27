@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+import dj_database_url
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -24,13 +25,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-for-development-only')
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-replace-this-with-a-real-secret-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'  # Changed default to False for production
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-# Railway-specific allowed hosts
-RAILWAY_STATIC_URL = os.getenv('RAILWAY_STATIC_URL', '')
+# Railway deployment settings
 ALLOWED_HOSTS = [
     'movierecommendation-production-1df5.up.railway.app',
     '.railway.app',
@@ -39,9 +39,10 @@ ALLOWED_HOSTS = [
     '0.0.0.0'
 ]
 
-# Add Railway URL if present
-if RAILWAY_STATIC_URL:
-    ALLOWED_HOSTS.append(RAILWAY_STATIC_URL)
+# Add any additional Railway URLs from environment
+railway_public_url = os.getenv('RAILWAY_PUBLIC_DOMAIN')
+if railway_public_url:
+    ALLOWED_HOSTS.append(railway_public_url)
 
 # Application definition
 INSTALLED_APPS = [
@@ -61,9 +62,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # Keep this at the top
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add for static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -77,14 +78,13 @@ ROOT_URLCONF = 'movie_app.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # Add templates directory
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.static',
             ],
         },
     },
@@ -103,74 +103,42 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',  # Keep for development
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20,
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle'
-    ],
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/hour',
-        'user': '1000/hour'
+}
+
+# Database configuration - FIXED FOR RAILWAY
+# Use DATABASE_URL from Railway environment, fallback to SQLite for development
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
-# Database configuration
-# Use Railway PostgreSQL if DATABASE_URL is available, otherwise SQLite
-if os.getenv('DATABASE_URL'):
-    import dj_database_url
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=os.getenv('DATABASE_URL'),
-            conn_max_age=600,
-            ssl_require=True
-        )
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+# Override with Railway PostgreSQL if DATABASE_URL is available
+DATABASE_URL = os.getenv('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES['default'] = dj_database_url.config(
+        default=DATABASE_URL,
+        conn_max_age=600,
+        ssl_require=True
+    )
 
 # TMDb API Configuration
 TMDB_API_KEY = os.getenv('TMDB_API_KEY', '8affeb7b5afcb034d36b16ec279875f5')
 TMDB_BASE_URL = os.getenv('TMDB_BASE_URL', 'https://api.themoviedb.org/3')
 
-# Cache configuration - Use Redis if available, otherwise local memory
-if os.getenv('REDIS_URL'):
-    CACHES = {
-        'default': {
-            'BACKEND': 'django_redis.cache.RedisCache',
-            'LOCATION': os.getenv('REDIS_URL'),
-            'OPTIONS': {
-                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            }
-        }
+# Cache configuration - Simple local memory cache for now
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
     }
-else:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'unique-snowflake',
-        }
-    }
-
-# Session configuration
-SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
+}
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # Allow all for now, can restrict later
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "https://movierecommendation-production-1df5.up.railway.app",
-]
 
 # Security settings for production
 if not DEBUG:
@@ -181,7 +149,7 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     
     # HSTS settings
-    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_PRELOAD = True
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     
@@ -191,8 +159,6 @@ if not DEBUG:
     X_FRAME_OPTIONS = 'DENY'
 
 # Logging configuration
-LOG_LEVEL = 'DEBUG' if DEBUG else 'INFO'
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -201,35 +167,21 @@ LOGGING = {
             'format': '{levelname} {asctime} {module} {message}',
             'style': '{',
         },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose' if DEBUG else 'simple',
+            'formatter': 'verbose',
         },
     },
     'root': {
         'handlers': ['console'],
-        'level': LOG_LEVEL,
+        'level': 'INFO',
     },
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': LOG_LEVEL,
-            'propagate': False,
-        },
-        'movies': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'users': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False,
         },
     },
@@ -264,18 +216,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Remove the non-existent static directory from STATICFILES_DIRS
-STATICFILES_DIRS = [
-    # Only include if the directory exists
-    # BASE_DIR / 'static',  # Commented out since it doesn't exist
-]
-
 # WhiteNoise configuration for static files
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -289,22 +231,3 @@ SWAGGER_SETTINGS = {
     },
     'USE_SESSION_AUTH': False,
 }
-
-# Custom settings
-API_VERSION = 'v1'
-APP_NAME = 'Movie Recommendation API'
-
-# Email configuration (for production)
-if not DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-    EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
-    EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
-    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
-    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-    DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@yourdomain.com')
-else:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-# Create logs directory if it doesn't exist
-os.makedirs(BASE_DIR / 'logs', exist_ok=True)
