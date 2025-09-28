@@ -1,40 +1,16 @@
-from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import UserProfile
+from django.db import models
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name', 'date_joined')
-        extra_kwargs = {
-            'password': {'write_only': True},
-            'email': {'required': True}
-        }
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    favorite_movies = models.ManyToManyField('movies.Movie', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    def create(self, validated_data):
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            password=validated_data['password'],
-            first_name=validated_data.get('first_name', ''),
-            last_name=validated_data.get('last_name', '')
-        )
-        return user
-
-    def update(self, instance, validated_data):
-        password = validated_data.pop('password', None)
-        if password:
-            instance.set_password(password)
-        return super().update(instance, validated_data)
-
-class UserProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
-    favorite_movies_count = serializers.SerializerMethodField()
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
 
     class Meta:
-        model = UserProfile
-        fields = ('id', 'user', 'favorite_movies_count', 'created_at', 'updated_at')
-        read_only_fields = ('id', 'created_at', 'updated_at')
-
-    def get_favorite_movies_count(self, obj):
-        return obj.favorite_movies.count()
+        db_table = 'users_userprofile'
+        verbose_name = 'User Profile'
+        verbose_name_plural = 'User Profiles'

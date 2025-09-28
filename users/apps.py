@@ -6,4 +6,6 @@ class UsersConfig(AppConfig):
     verbose_name = 'Users'
 
     def ready(self):
-        import users.signals
+        # Remove this line if it exists, or make sure it's correct
+        # import users.signals  # Only uncomment if you have signals
+        pass
