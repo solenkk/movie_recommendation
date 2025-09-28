@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.core.cache import cache
 from django.conf import settings
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import logging
 
 from .models import Movie
