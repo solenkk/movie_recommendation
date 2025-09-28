@@ -16,39 +16,43 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.http import JsonResponse
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from django.http import JsonResponse
 
-# Root view function
-def root_view(request):
+def home(request):
     return JsonResponse({
-        "message": "Movie Recommendation API is running! 🎬",
-        "version": "v1.0",
-        "endpoints": {
-            "admin_panel": "/admin/",
-            "api_documentation": "/api/docs/",
-            "authentication": "/api/auth/",
-            "movies": "/api/movies/"
+        'message': 'Movie Recommendation API is running!',
+        'endpoints': {
+            'documentation': '/api/docs/',
+            'health_check': '/api/movies/health/',
+            'trending_movies': '/api/movies/trending/',
+            'search_movies': '/api/movies/search/?q={query}',
+            'user_registration': '/api/auth/register/',
+            'user_login': '/api/auth/login/'
         },
-        "status": "active"
+        'version': '1.0.0'
     })
 
 schema_view = get_schema_view(
     openapi.Info(
         title="Movie Recommendation API",
         default_version='v1',
-        description="API for movie recommendation app",
+        description="API for movie recommendation app with TMDb integration",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="contact@movieapi.local"),
+        license=openapi.License(name="MIT License"),
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
 )
 
 urlpatterns = [
-    path('', root_view, name='root'),  # ← ADD THIS LINE for the root URL
+    path('', home, name='home'),
     path('admin/', admin.site.urls),
     path('api/auth/', include('users.urls')),
     path('api/movies/', include('movies.urls')),
     path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('api/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
